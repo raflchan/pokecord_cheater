@@ -59,6 +59,7 @@ class PokeSpotter:
 
     @staticmethod
     def parse_cache_process(in_q: Queue, src_dir:str, dest_dir: str):
+        
         filenames = in_q.get()
         for filename in filenames:
             if not filename.startswith('f_'):
@@ -72,6 +73,23 @@ class PokeSpotter:
                 continue
             dest = os.path.join(dest_dir, filename) + '.' + file_type
             shutil.copyfile(source, dest)
+
+    @staticmethod
+    def parse_smol_process(in_q: Queue, src_dir: str, dest_dir: str):
+        filenames = in_q.get()
+        for filename in filenames:
+            if not filename.startswith('f_'):
+                continue
+            source = os.path.join(src_dir, filename)
+            dest = os.path.join(dest_dir, filename) + '.png'
+            try:
+                img = Image.open(source)
+            except IOError:
+                continue
+            if img.size != (475, 475):
+                continue
+            img.thumbnail(RESIZE)
+            img.save(dest)
 
     @benchmark
     def parse_cache_multi(self, clear: bool=False):
@@ -95,7 +113,8 @@ class PokeSpotter:
             current_element = end
             current_filenames = filenames[start:end]
             out_q.put(current_filenames)
-            process = Process(target=self.parse_cache_process, args=(out_q, self._cache_dir, self._cache))
+            # process = Process(target=self.parse_cache_process, args=(out_q, self._cache_dir, self._cache))
+            process = Process(target=self.parse_smol_process, args=(out_q, self._cache_dir, self._cache_thumb))
             process.start()
             processes.append(process)
         
@@ -160,7 +179,7 @@ class PokeSpotter:
         # self.make_smol(self._pokedex, self._pokedex_thumb)
         # self.parse_cache(clear=True)
         self.parse_cache_multi(clear=True)
-        self.make_smol(self._cache, self._cache_thumb)
+        # self.make_smol(self._cache, self._cache_thumb)
         cache_hashes = self.hash_cache()
         pokedex_hashes = self.hash_pokedex()
         matches = self.find_matches(cache_hashes, pokedex_hashes)
