@@ -74,7 +74,7 @@ class PokeSpotter:
             shutil.copyfile(source, dest)
 
     @benchmark
-    def parse_cache2(self, clear: bool=False):
+    def parse_cache_multi(self, clear: bool=False):
         if clear:
             shutil.rmtree(self._cache, ignore_errors=True)
         os.makedirs(self._cache, exist_ok=True)
@@ -159,7 +159,7 @@ class PokeSpotter:
         start = current_time_millis()
         # self.make_smol(self._pokedex, self._pokedex_thumb)
         # self.parse_cache(clear=True)
-        self.parse_cache2(clear=True)
+        self.parse_cache_multi(clear=True)
         self.make_smol(self._cache, self._cache_thumb)
         cache_hashes = self.hash_cache()
         pokedex_hashes = self.hash_pokedex()
