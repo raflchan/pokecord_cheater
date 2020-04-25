@@ -39,7 +39,6 @@ class PokeSpotter:
             return 'jpg'
         return None
 
-    @benchmark        
     def parse_cache(self, clear: bool=False):
         if clear:
             shutil.rmtree(self._cache, ignore_errors=True)
@@ -91,7 +90,6 @@ class PokeSpotter:
             img.thumbnail(RESIZE)
             img.save(dest)
 
-    @benchmark
     def parse_cache_multi(self, clear: bool=False):
         if clear:
             shutil.rmtree(self._cache, ignore_errors=True)
@@ -117,12 +115,11 @@ class PokeSpotter:
             process = Process(target=self.parse_smol_process, args=(out_q, self._cache_dir, self._cache_thumb))
             process.start()
             processes.append(process)
-        
+
         # wait for tasks to be done
         for process in processes:
             process.join()
 
-    @benchmark     
     def make_smol(self, src_dir:str, dest_dir:str):
         os.makedirs(src_dir, exist_ok=True)
         os.makedirs(dest_dir, exist_ok=True)
@@ -143,7 +140,6 @@ class PokeSpotter:
         hasher.update(file_bytes)
         return hasher.hexdigest()
 
-    @benchmark     
     def hash_cache(self):
         hashes = []
         for filename in os.listdir(self._cache_thumb):
@@ -151,7 +147,6 @@ class PokeSpotter:
             hashes.append((self.hash_file(path), filename))
         return hashes
 
-    @benchmark     
     def hash_pokedex(self):
         hashes = dict()
         for filename in os.listdir(self._pokedex_thumb):
@@ -174,8 +169,8 @@ class PokeSpotter:
 
         return filtered_matches
 
+    @benchmark
     def spot(self):
-        start = current_time_millis()
         # self.make_smol(self._pokedex, self._pokedex_thumb)
         # self.parse_cache(clear=True)
         self.parse_cache_multi(clear=True)
@@ -183,8 +178,6 @@ class PokeSpotter:
         cache_hashes = self.hash_cache()
         pokedex_hashes = self.hash_pokedex()
         matches = self.find_matches(cache_hashes, pokedex_hashes)
-        total = current_time_millis() - start
-        print(f'spotting time: {total}ms')
         return matches
 
 
